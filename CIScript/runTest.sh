@@ -1,9 +1,11 @@
 #!/bin/sh
+go build -o send.out send.go 
+chmod +x send.out
 for filePath in $(find "../" -name "*.c")
 do
-    go run send.go $filePath $1 &
+    ./send.out $filePath $1 &
     sleep 3
 done
 
-sleep 190
+wait
 
