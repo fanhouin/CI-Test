@@ -33,7 +33,7 @@ func main() {
 	apiURL := os.Args[2]
 	response, err := http.PostForm(apiURL, formData)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Error while sending request")
 	}
 	defer response.Body.Close()
 

@@ -20,8 +20,10 @@ jobs:
         with:
           go-version: 1.18
 
-      - name: run test
+      - name: Send request to API
         run: |
           cd CIScript
+          go build -o send.out send.go 
+          chmod +x send.out
           chmod +x ./runTest.sh
           ./runTest.sh $API_URL
