@@ -1,15 +1,13 @@
 package main
 
 import (
-	"encoding/base64"
-	"fmt"
-	"io/ioutil"
+	"bytes"
+	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 func main() {
@@ -19,28 +17,36 @@ func main() {
 	}
 
 	filePath := os.Args[1]
-	fileContents, err := ioutil.ReadFile(filePath)
+	file, err := os.Open(filePath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	encodeContent := base64.StdEncoding.EncodeToString(fileContents)
-	targetName := strings.Split(filepath.Base(filePath), ".")[0]
+	defer file.Close()
 
-	formData := url.Values{}
-	formData.Set("target_name", targetName)
-	formData.Set("c_code", encodeContent)
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	fileField, err := writer.CreateFormFile("file", filepath.Base(filePath))
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = io.Copy(fileField, file)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	writer.Close()
 
 	apiURL := os.Args[2]
-	response, err := http.PostForm(apiURL, formData)
+	res, err := http.Post(apiURL, writer.FormDataContentType(), body)
 	if err != nil {
 		log.Fatal("Error while sending request")
 	}
-	defer response.Body.Close()
+	defer res.Body.Close()
 
-	apiResponse, err := ioutil.ReadAll(response.Body)
+	msg, err := io.ReadAll(res.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	fmt.Println(string(apiResponse))
+	log.Println(string(msg))
 }
