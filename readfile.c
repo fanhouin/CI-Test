@@ -26,7 +26,8 @@ int main(int argc, char* argv[]) {
 
     char line[1024];
     while (fgets(line, sizeof(line), file)) {
-        line[strcspn(line, "\n")] = '\0';  // Remove newline character, if present
+        line[strcspn(line, "\n")] =
+            '\0';  // Remove newline character, if present
         processString(line);
     }
 
